@@ -79,15 +79,20 @@ ENV DISPLAY :0
 CMD ["/usr/bin/xeyes"]
 ```
 
+# How it works
 build it with
-```
+```bash
+code
 ```
 
 ```bash
+XSOCK=/tmp/.X11-unix
+XAUTH=/tmp/.docker.xauth
 docker run -ti -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH myapp:v1
 ```
 
-XSOCK=/tmp/.X11-unix
-XAUTH=/tmp/.docker.xauth
-xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
-docker run -ti -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH xeyes
+# Install Spinnacker SDK
+```bash
+cd spinnaker-1.23.0.27-amd64 \
+
+```

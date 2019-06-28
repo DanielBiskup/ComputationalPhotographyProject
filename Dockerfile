@@ -33,8 +33,27 @@ RUN cd /app && \
     apt-get -y install sudo && \
     apt-get -y install libusb-1.0-0
 
-# RUN printf 'y\nn\n' | sh install_spinnaker.sh
-
 RUN apt-get install -y x11-apps
 ENV DISPLAY :0
+
+# RUN printf 'y\nn\n' | sh install_spinnaker.sh
+
+# Spinnacker setup:
+## 1. Dependency Installation
+RUN sudo apt-get install \
+        libavcodec57 \
+        libavformat57 \
+        libswscale4 \
+        libswresample2 \
+        libavutil55 \
+        libusb-1.0-0 \
+        libgtkmm-2.4-dev
+
+## 2. USB RELATED NOTES
+
+## 3. SPINNAKER INSTALLATION
+RUN cd /app/spinnaker-1.23.0.27-amd64 \
+    sudo sh install_spinnaker.sh
+
+
 CMD ["/usr/bin/xeyes"]
