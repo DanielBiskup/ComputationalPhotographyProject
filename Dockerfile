@@ -36,4 +36,5 @@ RUN cd /app && \
 # RUN printf 'y\nn\n' | sh install_spinnaker.sh
 
 RUN apt-get install -y x11-apps
+ENV DISPLAY :0
 CMD ["/usr/bin/xeyes"]
