@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+containerId=app
+
 xhost +local:root
 XSOCK=/tmp/.X11-unix
 XAUTH=/tmp/.docker.xauth
-containerId=app
 docker run -ti \
   -v $XSOCK:$XSOCK \
   -v $XAUTH:$XAUTH \
