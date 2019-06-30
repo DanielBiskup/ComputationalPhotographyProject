@@ -1,8 +1,0 @@
-version: '3'
-services:
-  spinnaker:
-    build: .
-    ports:
-      - "5000:5000"
-  redis:
-    image: "redis:alpine"
