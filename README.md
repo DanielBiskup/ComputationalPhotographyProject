@@ -1,6 +1,8 @@
 # ComputationalPhotographyProject
 Docker setup is known to work on Debain 9.9. Almost surely won't work on Windows.
 As the Spinnaker SDK requires Ubuntu 18.04, a Docker image had to be created.
+For the most part, the Dockerfile follows the instructions given in the official
+README.txt of the Sinnacker SDK.
 
 # Steps
 Some important steps form [other peoples projects](https://github.com/justinblaber/multi_pyspin) or the official `README.txt` in the SDK distribution, might be missing in the following list. Please read the official `README.txt`.
