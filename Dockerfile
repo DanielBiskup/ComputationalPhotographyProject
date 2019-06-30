@@ -36,11 +36,9 @@ RUN cd /app && \
 RUN apt-get install -y x11-apps
 ENV DISPLAY :0
 
-# RUN printf 'y\nn\n' | sh install_spinnaker.sh
-
 # Spinnacker setup:
 ## 1. Dependency Installation
-RUN sudo apt-get install \
+RUN sudo apt-get -y install \
         libavcodec57 \
         libavformat57 \
         libswscale4 \
@@ -52,8 +50,14 @@ RUN sudo apt-get install \
 ## 2. USB RELATED NOTES
 
 ## 3. SPINNAKER INSTALLATION
-RUN cd /app/spinnaker-1.23.0.27-amd64 \
-    sudo sh install_spinnaker.sh
+# RUN printf 'y\nn\nn\n' | sh install_spinnaker.sh
 
+RUN cd /app/spinnaker-1.23.0.27-amd64 && \
+    sed -i '50,101d' install_spinnaker.sh && \
+    printf 'y\nn\n' | sh install_spinnaker.sh
+
+## Install some dependencies for the SpinView_QT:
+RUN apt-get -y install libgl1-mesa-glx # https://github.com/ContinuumIO/docker-images/issues/49#issuecomment-302152488
+RUN apt-get -y install libqt5x11extras5 # https://askubuntu.com/a/902774/163596
 
 CMD ["/usr/bin/xeyes"]

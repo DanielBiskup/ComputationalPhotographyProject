@@ -79,20 +79,40 @@ ENV DISPLAY :0
 CMD ["/usr/bin/xeyes"]
 ```
 
+# Error caused by later lines of the `install_spinnaker.sh`
+I have to delete some lines in the script which I don't need, because otherwise
+the script would otherwise fail with some error.
+```bash
+sed -i '50,101d' install_spinnaker.sh  
+```
+
 # How it works
 build it with
 ```bash
-code
+docker build --tag=myapp:v1 .
 ```
 
+Run with [x11 Forwarding](https://stackoverflow.com/a/25280523/1510873) is [possible](http://wiki.ros.org/docker/Tutorials/GUI#The_simple_way) as follwos:
 ```bash
+xhost +local:root
 XSOCK=/tmp/.X11-unix
 XAUTH=/tmp/.docker.xauth
-docker run -ti -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH myapp:v1
+containerId=app
+docker run -ti -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH $containerId bash
 ```
-
-# Install Spinnacker SDK
+when your done with your work you should remove the permission above again, for
+security reasons:
 ```bash
-cd spinnaker-1.23.0.27-amd64 \
-
+xhost -local:root
 ```
+
+Also run with the
+[`--privileged` flag](https://stackoverflow.com/a/55198696/1510873),
+so that it can use the USB devices, in this case the camera:
+```bash
+docker run -ti --privileged ubuntu bash
+```
+
+deps:
+* `apt install libgl1-mesa-glx` [here](https://github.com/ContinuumIO/docker-images/issues/49#issuecomment-302152488)
+* `apt -y install libqt5x11extras5` [here](https://askubuntu.com/a/902774/163596)
