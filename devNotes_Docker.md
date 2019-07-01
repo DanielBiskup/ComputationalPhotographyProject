@@ -64,9 +64,20 @@ the script would otherwise fail with some error.
 sed -i '50,101d' install_spinnaker.sh  
 ```
 
+# Only one of the two Grasshopper3 Cameras working. Gray camera also not working
 
-# Get firmware:
-flir gs3-u3-23s6m-c firmware
-  / ms6-c
+## Fixing the Color Camera
+### Get firmware:
+Our Grasshopper3 camera is of model **GS3-U3-23S6C-C**.
 
 Or other SDK, i.e. FlyCap
+
+* [Support page on 'Grasshopper3 Firmware'](https://www.flir.com/support/?query=Grasshopper3+Firmware)
+* ['Box' directory firmware for all versions of 'Grasshopper3 USB3 Firmware'](https://flir.app.boxcn.net/s/32307vvdezwgu27g6eojf5qw8z6mmndt)
+* [Firmware download for our particular Grasshopper3 version, i.e. `gs3-u3-23s6m-c`](https://flir.app.boxcn.net/s/32307vvdezwgu27g6eojf5qw8z6mmndt/file/418659834016)
+
+## Gray Camera
+On running `spinview` this throws the following Error:
+```
+Debug: (null) ((null):0, Error in start stream  Spinnaker: Could not Start Acquisition [-1010])
+```
