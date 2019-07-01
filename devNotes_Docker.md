@@ -63,3 +63,10 @@ the script would otherwise fail with some error.
 ```bash
 sed -i '50,101d' install_spinnaker.sh  
 ```
+
+
+# Get firmware:
+flir gs3-u3-23s6m-c firmware
+  / ms6-c
+
+Or other SDK, i.e. FlyCap
