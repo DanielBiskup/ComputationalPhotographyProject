@@ -51,6 +51,16 @@ docker run -ti --privileged ubuntu bash
 
 **Note** however, that the camera needs to be plugged in before starting the container.
 
+## Using `bind` vs `mount`?
+We want to have access to a directory on our system. That's a job for `bind` (as pointed out [here](Bind mounts have been around since the early days of Docker. Bind mounts have limited functionality compared to volumes. When you use a bind mount, a file or directory on the host machine is mounted into a container. The file or directory is referenced by its full or relative path on the host machine. By contrast, when you use a volume, a new directory is created within Docker’s storage directory on the host machine, and Docker manages that directory’s contents.).
+`mount` on the other hand would create a new directory on the host which then would be managed by Docker.
+
+To make the the folder `mount` from the projects root directory accessible in the container, we need to therefore mount it with:
+```
+--mount type=bind,source="$(pwd)"/mount,target=/mount
+```
+This flag was added to the `run.sh` script. It's assumed that `run.sh` will be run with the projects root as the current working directory.
+
 # Some explaination of what the Dockerfile does
 
 ## Install some dependencies `SpinView` requires
