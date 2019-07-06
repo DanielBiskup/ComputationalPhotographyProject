@@ -17,3 +17,5 @@ Some important steps form [other peoples projects](https://github.com/justinblab
 *   Plug the cameras into the USB ports. **Note:** If you don't plug the cameras in before starting the container, the container will not be able to use them.
 
 *   To run the image, run `./run.sh`. This script will start the container with the required flags for X11-forwarding and for allowing the container access to the USB devices (here the cameras) of the host.
+
+The `./run.sh` should have opened

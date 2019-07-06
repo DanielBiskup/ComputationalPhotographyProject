@@ -86,8 +86,62 @@ Or other SDK, i.e. FlyCap
 * ['Box' directory firmware for all versions of 'Grasshopper3 USB3 Firmware'](https://flir.app.boxcn.net/s/32307vvdezwgu27g6eojf5qw8z6mmndt)
 * [Firmware download for our particular Grasshopper3 version, i.e. `gs3-u3-23s6m-c`](https://flir.app.boxcn.net/s/32307vvdezwgu27g6eojf5qw8z6mmndt/file/418659834016)
 
-## Gray Camera
-On running `spinview` this throws the following Error:
+The `mount` directory in the projects root is bind-mounted into the container. Thus we can copy the Firmware update there and apply it from inside the container with:
 ```
-Debug: (null) ((null):0, Error in start stream  Spinnaker: Could not Start Acquisition [-1010])
+cd /mount/FIRMWARE/GS3-U3-2.30.3.0-23S6
+SpinUpdateConsole -R16010860 GS3-U3-2.30.3.0-23S6.ez2
 ```
+I tried just now, but it doesn't change anything... The output of the SpinUpdateConsole doesn't tell me much.
+```
+root@e36f53651a91:/mount/FIRMWARE/GS3-U3-2.30.3.0-23S6# SpinUpdateConsole -R16010860 GS3-U3-2.30.3.0-23S6.ez2
+Reading firmware file:
+Updater Initialization...
+Get USB cameras...
+Get GigE cameras...
+Number of FLIR camera(s) discovered: 1
+FF010000: skipping
+FFF80000: wrong timestamp
+FFFE0000: wrong timestamp
+FF080000: skipping
+FFF90000: wrong timestamp
+FFFD0000: wrong timestamp
+FFFFD000: wrong version
+FFF80000: erase SA00: FFF80000..FFF83FFF
+FFF80000: erase SA01: FFF84000..FFF87FFF
+FFF80000: erase SA02: FFF88000..FFF8BFFF
+FFFE0000: erase SA24: FFFE0000..FFFE3FFF
+FFFE0000: erase SA25: FFFE4000..FFFE7FFF
+FFFE0000: erase SA26: FFFE8000..FFFEBFFF
+FFF90000: erase SA04: FFF90000..FFF93FFF
+FFF90000: erase SA05: FFF94000..FFF97FFF
+FFF90000: erase SA06: FFF98000..FFF9BFFF
+FFF90000: erase SA07: FFF9C000..FFF9FFFF
+FFF90000: erase SA08: FFFA0000..FFFA3FFF
+FFF90000: erase SA09: FFFA4000..FFFA7FFF
+FFF90000: erase SA10: FFFA8000..FFFABFFF
+FFF90000: erase SA11: FFFAC000..FFFAFFFF
+FFF90000: erase SA12: FFFB0000..FFFB3FFF
+FFFD0000: erase SA20: FFFD0000..FFFD3FFF
+FFFD0000: erase SA21: FFFD4000..FFFD7FFF
+FFFD0000: erase SA22: FFFD8000..FFFDBFFF
+FFFFD000: erase SA35: FFFFD000..FFFFDFFF
+HAL Updater Complete
+```
+
+Spinview shows for A:
+Serial Number: 16010805
+FW:v2.25.3.00 FPGA:v2
+
+Spinview shows for B:
+Serial Number: 16010860
+FW:v2.30.3.00 FPGA:v2.02
+
+# Q:
+Buildung the Dockerfile fails with:
+```
+E: Failed to fetch http://archive.ubuntu.com/ubuntu/pool/main/libd/libdrm/libdrm-common_2.4.95-1~18.04.1_all.deb  404  Not Found [IP: 91.189.91.26 80]
+```
+what's most likely the problem, and how to fix it?
+# A:
+https://stackoverflow.com/a/37727984/1510873
+You need to add `apt-get -y update` as the first command in every `RUN` block which runs `apt-get -y install`. That's because of Dockers build caching.
