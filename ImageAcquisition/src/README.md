@@ -1,5 +1,6 @@
 # FindGoodExposureTime
 
+## Set Expose Time
 One of our cameras didn't allow us to set ExposureTime. The description of which
 in SpinView is:
 
@@ -26,4 +27,14 @@ exposure_time_to_set = 2000000.0
 exposure_time_to_set = min(cam.ExposureTime.GetMax(), exposure_time_to_set)
 cam.ExposureTime.SetValue(exposure_time_to_set)
 print('Shutter time set to %s us...\n' % exposure_time_to_set)
+```
+
+## Gray images / Color images
+It might seem random, that sometimes images captured are gray and sometimes they
+have color. That's because the cameras configuration is actually saved on the
+camera as long as it's connected to the computer.
+Otherwise you might get:
+```
+Acquisition mode set to continuous...
+Segmentation fault (core dumped)
 ```

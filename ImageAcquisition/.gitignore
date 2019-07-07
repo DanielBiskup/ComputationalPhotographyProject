@@ -1,3 +1,4 @@
 Ubuntu18.04
 *.swp
 __pycache__
+core
