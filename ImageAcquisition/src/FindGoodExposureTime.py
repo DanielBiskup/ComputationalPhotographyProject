@@ -1,37 +1,16 @@
-# coding=utf-8
-# =============================================================================
-#  Copyright © 2017 FLIR Integrated Imaging Solutions, Inc. All Rights Reserved.
-#
-#  This software is the confidential and proprietary information of FLIR
-#  Integrated Imaging Solutions, Inc. ("Confidential Information"). You
-#  shall not disclose such Confidential Information and shall use it only in
-#  accordance with the terms of the license agreement you entered into
-#  with FLIR Integrated Imaging Solutions, Inc. (FLIR).
-#
-#  FLIR MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE SUITABILITY OF THE
-#  SOFTWARE, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE
-#  IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-#  PURPOSE, OR NON-INFRINGEMENT. FLIR SHALL NOT BE LIABLE FOR ANY DAMAGES
-#  SUFFERED BY LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING
-#  THIS SOFTWARE OR ITS DERIVATIVES.
-# =============================================================================
-#
-#  Trigger.py shows how to trigger the camera. It relies on information
-#  provided in the Enumeration, Acquisition, and NodeMapInfo examples.
-#
-#  It can also be helpful to familiarize yourself with the ImageFormatControl
-#  and Exposure examples. As they are somewhat shorter and simpler, either
-#  provides a strong introduction to camera customization.
-#
-#  This example shows the process of configuring, using, and cleaning up a
-#  camera for use with both a software and a hardware trigger.
-
 import os
 import PySpin
 from util import SetExposureTime
+import serial
+import time
 
 NUM_IMAGES = 10  # number of images to grab
+exposures = [5000, 10000, 25000, 50000, 75000, 100000, 250000, 300000, 350000, 400000]
 
+arduino_port = '/dev/ttyUSB0' #serial port for the arduino board
+arduino = serial.Serial(arduino_port, 115200, timeout=.1) #open serial port
+time.sleep(2) #give the serial port time to settle
+arduino.write(bytes("o", 'ASCII')) #make sure both leds are off
 
 class TriggerType:
     SOFTWARE = 1
@@ -123,7 +102,7 @@ def configure_trigger(cam):
     return result
 
 
-def grab_next_image_by_trigger(nodemap, cam):
+def grab_next_image_by_trigger(nodemap, cam, mode):
     """
     This function acquires an image by executing the trigger node.
 
@@ -147,6 +126,11 @@ def grab_next_image_by_trigger(nodemap, cam):
             # Get user input
             input('Press the Enter key to initiate software trigger.')
 
+
+            #turn on led
+            arduino.write(bytes(mode, 'ASCII'))
+            time.sleep(0.002)
+
             # Execute software trigger
             node_softwaretrigger_cmd = PySpin.CCommandPtr(nodemap.GetNode('TriggerSoftware'))
             if not PySpin.IsAvailable(node_softwaretrigger_cmd) or not PySpin.IsWritable(node_softwaretrigger_cmd):
@@ -154,6 +138,10 @@ def grab_next_image_by_trigger(nodemap, cam):
                 return False
 
             node_softwaretrigger_cmd.Execute()
+
+            #turn off led
+            time.sleep(0.008)
+            arduino.write(bytes(mode, 'ASCII'))
 
             # TODO: Blackfly and Flea3 GEV cameras need 2 second delay after software trigger
 
@@ -166,7 +154,6 @@ def grab_next_image_by_trigger(nodemap, cam):
 
     return result
 
-exposures = [5000, 10000, 25000, 50000, 75000, 100000, 250000, 300000, 350000, 400000]
 
 def acquire_images(cam, nodemap, nodemap_tldevice):
     """
@@ -231,8 +218,10 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
             try:
                 SetExposureTime(cam, exposures[i])
 
+                mode = 'v'
+
                 #  Retrieve the next image from the trigger
-                result &= grab_next_image_by_trigger(nodemap, cam)
+                result &= grab_next_image_by_trigger(nodemap, cam, mode)
 
                 #  Retrieve next received image
                 image_result = cam.GetNextImage()
@@ -253,17 +242,6 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
                     height = image_result.GetHeight()
                     print('Grabbed Image %d, width = %d, height = %d' % (i, width, height))
 
-                    #  Convert image to mono 8
-                    #
-                    #  *** NOTES ***
-                    #  Images can be converted between pixel formats by using
-                    #  the appropriate enumeration value. Unlike the original
-                    #  image, the converted one does not need to be released as
-                    #  it does not affect the camera buffer.
-                    #
-                    #  When converting images, color processing algorithm is an
-                    #  optional parameter.
-                    # image_converted = image_result.Convert(PySpin.PixelFormat_Mono8, PySpin.HQ_LINEAR)
                     image_converted = image_result
 
                     # Create a unique filename
@@ -489,6 +467,8 @@ def main():
 
     # Release system instance
     system.ReleaseInstance()
+    
+    arduino.close()
 
     input('Done! Press Enter to exit...')
     return result
