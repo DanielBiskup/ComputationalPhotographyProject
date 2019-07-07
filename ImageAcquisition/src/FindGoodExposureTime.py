@@ -5,7 +5,7 @@ import serial
 import time
 
 NUM_IMAGES = 10  # number of images to grab
-exposures = [5000, 10000, 25000, 50000, 75000, 100000, 250000, 300000, 350000, 400000, 500000, 600000, 700000, 800000]
+exposures = [10000, 25000, 50000, 75000, 100000, 125000, 150000, 175000, 200000, 250000]
 
 arduino_port = '/dev/ttyUSB0' #serial port for the arduino board
 arduino = serial.Serial(arduino_port, 115200, timeout=.1) #open serial port
@@ -102,7 +102,7 @@ def configure_trigger(cam):
     return result
 
 
-def grab_next_image_by_trigger(nodemap, cam, mode):
+def grab_next_image_by_trigger(nodemap, cam, mode, exposure):
     """
     This function acquires an image by executing the trigger node.
 
@@ -138,7 +138,7 @@ def grab_next_image_by_trigger(nodemap, cam, mode):
             node_softwaretrigger_cmd.Execute()
 
             #turn off led
-            time.sleep(0.08)
+            time.sleep(0.008+(exposure/1000000))
             arduino.write(bytes(mode, 'ASCII'))
 
             # TODO: Blackfly and Flea3 GEV cameras need 2 second delay after software trigger
@@ -219,7 +219,7 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
                 mode = 'v'
 
                 #  Retrieve the next image from the trigger
-                result &= grab_next_image_by_trigger(nodemap, cam, mode)
+                result &= grab_next_image_by_trigger(nodemap, cam, mode, exposure)
 
                 #  Retrieve next received image
                 image_result = cam.GetNextImage()
