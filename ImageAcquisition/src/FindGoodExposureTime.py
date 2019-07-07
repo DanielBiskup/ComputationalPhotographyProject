@@ -5,7 +5,7 @@ import serial
 import time
 
 NUM_IMAGES = 10  # number of images to grab
-exposures = [5000, 10000, 25000, 50000, 75000, 100000, 250000, 300000, 350000, 400000]
+exposures = [5000, 10000, 25000, 50000, 75000, 100000, 250000, 300000, 350000, 400000, 500000, 600000, 700000, 800000]
 
 arduino_port = '/dev/ttyUSB0' #serial port for the arduino board
 arduino = serial.Serial(arduino_port, 115200, timeout=.1) #open serial port
@@ -123,13 +123,11 @@ def grab_next_image_by_trigger(nodemap, cam, mode):
         # When an image is retrieved, it is plucked from the stream.
 
         if CHOSEN_TRIGGER == TriggerType.SOFTWARE:
-            # Get user input
-            input('Press the Enter key to initiate software trigger.')
 
 
             #turn on led
             arduino.write(bytes(mode, 'ASCII'))
-            time.sleep(0.002)
+            time.sleep(0.008)
 
             # Execute software trigger
             node_softwaretrigger_cmd = PySpin.CCommandPtr(nodemap.GetNode('TriggerSoftware'))
@@ -140,7 +138,7 @@ def grab_next_image_by_trigger(nodemap, cam, mode):
             node_softwaretrigger_cmd.Execute()
 
             #turn off led
-            time.sleep(0.008)
+            time.sleep(0.08)
             arduino.write(bytes(mode, 'ASCII'))
 
             # TODO: Blackfly and Flea3 GEV cameras need 2 second delay after software trigger
@@ -214,9 +212,9 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
             print('Device serial number retrieved as %s...' % device_serial_number)
 
         # Retrieve, convert, and save images
-        for i in range(NUM_IMAGES):
+        for exposure in exposures:
             try:
-                SetExposureTime(cam, exposures[i])
+                SetExposureTime(cam, exposure)
 
                 mode = 'v'
 
@@ -232,23 +230,9 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
 
                 else:
 
-                    #  Print image information; height and width recorded in pixels
-                    #
-                    #  *** NOTES ***
-                    #  Images have quite a bit of available metadata including
-                    #  things such as CRC, image status, and offset values, to
-                    #  name a few.
-                    width = image_result.GetWidth()
-                    height = image_result.GetHeight()
-                    print('Grabbed Image %d, width = %d, height = %d' % (i, width, height))
-
                     image_converted = image_result
 
-                    # Create a unique filename
-                    if device_serial_number:
-                        filename = 'Trigger-%s-%d exposure %d.jpg' % (device_serial_number, i, exposures[i])
-                    else:  # if serial number is empty
-                        filename = 'Trigger-%d exposure %d.jpg' % (i, exposures[i])
+                    filename = 'Trigger-exposure-%d.jpg' % (exposure)
                     filename = 'output/FindGoodExposureTime/' + filename
 
                     # Save image
