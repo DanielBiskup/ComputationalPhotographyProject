@@ -4,38 +4,29 @@ import time
 import serial
 from util import SetExposureTime
 
+#set the exposure time to be used
 exposure = 75000
+
+#set the number of image pairs to be recorded
 NUM_IMAGES = 64
 
-arduino_port = '/dev/ttyUSB0' #serial port for the arduino board
+#set the serial port for the Arduino controling the leds
+arduino_port = '/dev/ttyUSB0'
+
 arduino = serial.Serial(arduino_port, 115200, timeout=.1) #open serial port
 time.sleep(2) #give the serial port time to settle
 arduino.write(bytes("o", 'ASCII')) #make sure both leds are off
 
-# Total number of buffers
+#set the total number of buffers to 2 for one image pair
 NUM_BUFFERS = 2
-# Number of triggers
-NUM_TRIGGERS = 1
-# Total number of loops
-NUM_LOOPS = 2
+
 
 def configure_trigger(nodemap):
-	"""
-	This function configures the camera to use a trigger. First, trigger mode is
-	set to off in order to select the trigger source. Once the trigger source
-	has been selected, trigger mode is then enabled, which has the camera
-	capture only a single image upon the execution of the trigger.
-
-	:param nodemap: Device nodemap to retrieve images from.
-	:type nodemap: INodeMap
-	:return: True if successful, False otherwise
-	:rtype: bool
-	"""
 	try:
 		result = True
 		print('\n*** CONFIGURING TRIGGER ***\n')
 
-		# Ensure trigger mode off
+		# Ensure trigger mode is off
 		#
 		# *** NOTES ***
 		# The trigger must be disabled in order to configure the
@@ -84,17 +75,7 @@ def configure_trigger(nodemap):
 
 def grab_next_image_by_trigger(nodemap, mode, exposure):
 	"""
-	This function retrieves a single image using the trigger. In this example,
-	only a single image is captured and made available for acquisition - as such,
-	attempting to acquire two images for a single trigger execution would cause
-	the example to hang. This is different from other examples, whereby a
-	constant stream of images are being captured and made available for image
-	acquisition.
-
-	:param nodemap: Device nodemap to retrieve images from.
-	:type nodemap: INodeMap
-	:return: True if successful, False otherwise
-	:rtype: bool
+	This turns on one LED, sends a trigger to the camera and turns the LED off again after the images taken
 	"""
 	try:
 		result = True
@@ -124,11 +105,6 @@ def grab_next_image_by_trigger(nodemap, mode, exposure):
 def reset_trigger(nodemap):
 	"""
 	This function returns the camera to a normal state by turning off trigger mode.
-
-	:param nodemap: Device nodemap to retrieve images from.
-	:type nodemap: INodeMap
-	:return: True if successful, False otherwise
-	:rtype: bool
 	"""
 	try:
 		result = True
@@ -192,17 +168,7 @@ def print_device_info(nodemap):
 
 def acquire_images(cam, nodemap, nodemap_tldevice):
 	"""
-	This function cycles through the four different buffer handling modes.
-	It saves three images for three of the buffer handling modes
-	(NewestFirst, OldestFirst, and OldestFirstOverwrite).  For NewestOnly,
-	it saves one image.
-
-	:param cam: Camera instance to grab images from.
-	:param nodemap: Device nodemap.
-	:type cam: CameraPtr
-	:type nodemap: INodeMap
-	:return: True if successful, False otherwise.
-	:rtype: bool
+	This function Acquires NUM_IMAGES pairs of polarized images
 	"""
 	try:
 		result = True
@@ -285,14 +251,15 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
 			images = []
 			SetExposureTime(cam, exposure)
 			for i in range(NUM_IMAGES):
-				# Software Trigger the camera then  save images
-				# Retrieve the next image from the trigger
+				# Software Trigger the camera with vertically polarized LED turned on
 				result &= grab_next_image_by_trigger(nodemap, 'v', exposure)
 				time.sleep(0.04)
+				# Software Trigger the camera with horizontally polarized LED turned on
 				result &= grab_next_image_by_trigger(nodemap, 'h', exposure)
 				time.sleep(0.04)
 			
-				for loop_cnt in range (0, NUM_LOOPS):
+				#Save the two acquired images
+				for loop_cnt in range (2):
 					result_image = cam.GetNextImage(500)
 
 					if result_image.IsIncomplete():
@@ -311,9 +278,6 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
 					# Release image
 					result_image.Release()
 
-					# To control the framerate, have the application pause for 250ms.
-					#time.sleep(0.04)
-
 		except PySpin.SpinnakerException as ex:
 			print('Error: %s' % ex)
 			if handling_mode_entry.GetSymbolic() == 'NewestOnly':
@@ -331,13 +295,7 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
 
 def run_single_camera(cam):
 	"""
-	This function acts as the body of the example; please see NodeMapInfo example
-	for more in-depth comments on setting up cameras.
-
-	:param cam: Camera to acquire images from.
-	:type cam: CameraPtr
-	:return: True if successful, False otherwise.
-	:rtype: bool
+	This function acts as the body of the script
 	"""
 	try:
 		result = True
@@ -373,16 +331,8 @@ def run_single_camera(cam):
 	return result
 
 def main():
-	"""
-	Example entry point; please see Enumeration example for more in-depth
-	comments on preparing and cleaning up the system.
-
-	:return: True if successful, False otherwise.
-	:rtype: bool
-	"""
-
 	# Since this application saves images in the current folder
-	# we must ensure that we have permission to write to this folder.
+	# it hast to be ensured that we have permission to write to this folder.
 	# If we do not have permission, fail right away.
 	try:
 		test_file = open('test.txt', 'w+')
@@ -430,9 +380,6 @@ def main():
 		print('Camera %d example complete... \n' % i)
 
 		# Release reference to camera
-		# NOTE: Unlike the C++ examples, we cannot rely on pointer objects being automatically
-		# cleaned up when going out of scope.
-		# The usage of del is preferred to assigning the variable to None.
 	del cam
 
 	# Clear camera list before releasing system
