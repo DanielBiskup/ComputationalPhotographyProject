@@ -1,1 +1,0 @@
-docker rmi app --force
