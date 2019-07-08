@@ -5,13 +5,16 @@ import serial
 from util import SetExposureTime
 
 #set the exposure time to be used
-exposure = 75000
+exposure = 70000
 
 #set the number of image pairs to be recorded
 NUM_IMAGES = 64
 
 #set the serial port for the Arduino controling the leds
 arduino_port = '/dev/ttyUSB0'
+
+#set the path to the folder for output images
+output_folder = 'output/AcquireImages/'
 
 arduino = serial.Serial(arduino_port, 115200, timeout=.1) #open serial port
 time.sleep(2) #give the serial port time to settle
@@ -82,7 +85,7 @@ def grab_next_image_by_trigger(nodemap, mode, exposure):
 
 		#turn on led
 		arduino.write(bytes(mode, 'ASCII'))
-		time.sleep(0.002)
+		time.sleep(0.004)
 
 		# Execute software trigger
 		software_trigger_command = PySpin.CCommandPtr(nodemap.GetNode('TriggerSoftware'))
@@ -247,36 +250,37 @@ def acquire_images(cam, nodemap, nodemap_tldevice):
 
 
 		try:
-			count = -1
 			images = []
 			SetExposureTime(cam, exposure)
+			time.sleep(1)
 			for i in range(NUM_IMAGES):
 				# Software Trigger the camera with vertically polarized LED turned on
 				result &= grab_next_image_by_trigger(nodemap, 'v', exposure)
-				time.sleep(0.04)
+				time.sleep(0.02)
 				# Software Trigger the camera with horizontally polarized LED turned on
 				result &= grab_next_image_by_trigger(nodemap, 'h', exposure)
-				time.sleep(0.04)
+				time.sleep(0.02)
 			
 				#Save the two acquired images
 				for loop_cnt in range (2):
-					result_image = cam.GetNextImage(500)
+					result_image = cam.GetNextImage(1000)
 
 					if result_image.IsIncomplete():
 						print('Image incomplete with image status %s ...\n' % result_image.GetImageStatus())
 
 					if loop_cnt % 2 == 0:
-						mode = 'h'
+						photo_mode = 'crossed'
 					else:
-						mode = 'v'
-						count += 1
-					filename = '%d-%c.jpg' % (count, mode)
-
+						photo_mode = 'parallel'
+					filename = output_folder + '%d-%s.jpg' % (i, photo_mode)
+					
 					# Save image
 					result_image.Save(filename)
-
+					
 					# Release image
 					result_image.Release()
+					
+				time.sleep(1.5)
 
 		except PySpin.SpinnakerException as ex:
 			print('Error: %s' % ex)
