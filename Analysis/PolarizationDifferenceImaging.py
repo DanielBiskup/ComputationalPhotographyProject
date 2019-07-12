@@ -63,7 +63,8 @@ for directory in dataset_dirs:
 		# be removed or changed if you want to produce data sets for
 		# deep learning.
 		scaled_img_sum = ( img_sum / np.max(img_sum) ) * 255.0
-		scaled_img_direct = img_direct * 10.0
+		# scaled_img_direct = img_direct * 10.0
+		scaled_img_direct = ( img_direct * 255.0 ) / np.max(img_direct)
 		
 		SaveImage(scaled_img_sum, out_name_sum)
 		SaveImage(scaled_img_direct, out_name_direct)
